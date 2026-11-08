@@ -2,6 +2,8 @@
  * Quy tắc tính tiền dùng chung cho giỏ hàng (client) và tạo đơn hàng (server).
  * Server luôn tính lại bằng hàm này - không tin số tiền gửi từ client.
  */
+import { calculateDiscount } from "@/features/coupons/coupon-rules";
+import type { Coupon } from "@/features/coupons/types";
 
 export const SHIPPING_METHODS = ["standard", "express"] as const;
 
@@ -25,6 +27,8 @@ export interface PriceLine {
 
 export interface OrderTotals {
   subtotal: number;
+  /** Số tiền giảm từ mã giảm giá (0 nếu không dùng mã). */
+  discount: number;
   shippingFee: number;
   total: number;
 }
@@ -39,10 +43,24 @@ export function calculateShippingFee(subtotal: number, method: ShippingMethod): 
   return SHIPPING_OPTIONS[method].fee;
 }
 
-export function calculateOrderTotals(lines: PriceLine[], method: ShippingMethod): OrderTotals {
+/**
+ * Tổng tiền đơn hàng. Phí ship xét trên tạm tính TRƯỚC giảm giá (giữ quy tắc miễn phí ship hiện hành).
+ * Hàm không kiểm tra hạn/tối thiểu của mã - nơi gọi phải kiểm tra trước (checkCoupon/checkCouponEligibility).
+ */
+export function calculateOrderTotals(
+  lines: PriceLine[],
+  method: ShippingMethod,
+  coupon?: Coupon,
+): OrderTotals {
   const subtotal = calculateSubtotal(lines);
+  const discount = coupon ? calculateDiscount(coupon, subtotal) : 0;
   const shippingFee = calculateShippingFee(subtotal, method);
-  return { subtotal, shippingFee, total: subtotal + shippingFee };
+  return {
+    subtotal,
+    discount,
+    shippingFee,
+    total: subtotal - discount + shippingFee,
+  };
 }
 
 /** Số tiền cần mua thêm để được miễn phí giao hàng tiêu chuẩn. */

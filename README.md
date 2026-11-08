@@ -76,17 +76,27 @@ storage/                    # (tự tạo khi chạy) orders.json - đã đượ
 - **Phí giao hàng:** tiêu chuẩn 30.000 ₫ (miễn phí cho đơn từ 500.000 ₫), giao nhanh 60.000 ₫.
 - **Đặt hàng:** server tự tính lại giá từ dữ liệu sản phẩm, không tin giá do client gửi lên.
 - **Hủy đơn:** chỉ được hủy khi đơn đang ở trạng thái _Chờ xác nhận_.
+- **Mã giảm giá:** mỗi đơn dùng tối đa một mã, nhập ở trang thanh toán. Giảm trên tạm tính (không
+  giảm phí ship), không vượt quá tạm tính; điều kiện miễn phí giao hàng vẫn xét trên tạm tính trước
+  giảm giá. Server kiểm tra lại mã và tự tính lại số tiền khi đặt hàng. Mã ban đầu:
+
+  | Mã           | Ưu đãi                     | Điều kiện               |
+  | ------------ | -------------------------- | ----------------------- |
+  | `SHOPLITE10` | Giảm 10%, tối đa 100.000 ₫ | Đơn từ 300.000 ₫        |
+  | `GIAM50K`    | Giảm 50.000 ₫              | Đơn từ 500.000 ₫        |
+  | `TET2026`    | Giảm 15%, tối đa 200.000 ₫ | Hết hạn ngày 28/02/2026 |
 
 ## API
 
-| Method  | Endpoint              | Mô tả                                                                             |
-| ------- | --------------------- | --------------------------------------------------------------------------------- |
-| `GET`   | `/api/products`       | Danh sách sản phẩm. Query: `q, category, minPrice, maxPrice, inStock, sort, page` |
-| `GET`   | `/api/products/:slug` | Chi tiết sản phẩm                                                                 |
-| `GET`   | `/api/orders`         | Danh sách đơn hàng                                                                |
-| `POST`  | `/api/orders`         | Tạo đơn hàng                                                                      |
-| `GET`   | `/api/orders/:id`     | Chi tiết đơn hàng                                                                 |
-| `PATCH` | `/api/orders/:id`     | Hủy đơn: `{ "status": "cancelled" }`                                              |
+| Method  | Endpoint                | Mô tả                                                                             |
+| ------- | ----------------------- | --------------------------------------------------------------------------------- |
+| `GET`   | `/api/products`         | Danh sách sản phẩm. Query: `q, category, minPrice, maxPrice, inStock, sort, page` |
+| `GET`   | `/api/products/:slug`   | Chi tiết sản phẩm                                                                 |
+| `GET`   | `/api/orders`           | Danh sách đơn hàng                                                                |
+| `POST`  | `/api/orders`           | Tạo đơn hàng. Body có thể kèm `couponCode` (tùy chọn)                             |
+| `POST`  | `/api/coupons/validate` | Kiểm tra mã giảm giá cho giỏ hàng: `{ "code", "items" }`                          |
+| `GET`   | `/api/orders/:id`       | Chi tiết đơn hàng                                                                 |
+| `PATCH` | `/api/orders/:id`       | Hủy đơn: `{ "status": "cancelled" }`                                              |
 
 Lỗi trả về dạng `{ "error": { "code": "...", "message": "...", "details": { ... } } }`.
 

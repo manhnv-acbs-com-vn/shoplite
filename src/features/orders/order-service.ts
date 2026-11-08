@@ -1,10 +1,23 @@
 import { getProductById } from "@/features/catalog/catalog-service";
 import type { Product } from "@/features/catalog/types";
-import { placeOrderSchema, toFieldErrors } from "@/features/checkout/checkout-schema";
-import { calculateOrderTotals } from "@/features/checkout/pricing";
+import {
+  placeOrderSchema,
+  toFieldErrors,
+  validateCouponSchema,
+} from "@/features/checkout/checkout-schema";
+import { calculateOrderTotals, calculateSubtotal } from "@/features/checkout/pricing";
+import { checkCoupon } from "@/features/coupons/coupon-service";
+import { toCouponError } from "@/features/coupons/coupon-messages";
+import type { Coupon } from "@/features/coupons/types";
 import { OrderError } from "./order-errors";
 import type { OrderRepository } from "./order-repository";
 import type { Order, OrderItem } from "./types";
+
+export interface ValidateCouponResult {
+  coupon: Coupon;
+  subtotal: number;
+  discount: number;
+}
 
 export interface OrderServiceDeps {
   repository: OrderRepository;
@@ -35,6 +48,40 @@ export function createOrderService({
   now = () => new Date(),
   generateId = generateOrderId,
 }: OrderServiceDeps) {
+  /** Dựng dòng hàng từ catalog (bỏ qua mọi giá client gửi lên) và kiểm tra tồn kho. */
+  function buildOrderItems(items: { productId: string; quantity: number }[]): OrderItem[] {
+    return mergeItems(items).map(({ productId, quantity }) => {
+      const product = findProduct(productId);
+      if (!product) {
+        throw new OrderError("PRODUCT_NOT_FOUND", `Không tìm thấy sản phẩm "${productId}"`);
+      }
+      if (quantity > product.stock) {
+        throw new OrderError(
+          "INSUFFICIENT_STOCK",
+          product.stock === 0
+            ? `Sản phẩm "${product.name}" đã hết hàng`
+            : `Sản phẩm "${product.name}" chỉ còn ${product.stock} sản phẩm`,
+        );
+      }
+      return {
+        productId: product.id,
+        slug: product.slug,
+        name: product.name,
+        image: product.image,
+        unitPrice: product.price,
+        quantity,
+        lineTotal: product.price * quantity,
+      };
+    });
+  }
+
+  /** Kiểm tra mã tại thời điểm hiện tại; mã không hợp lệ -> ném OrderError (không bao giờ bỏ qua lặng lẽ). */
+  function resolveCoupon(code: string, subtotal: number): Coupon {
+    const result = checkCoupon(code, subtotal, now());
+    if (!result.ok) throw toCouponError(result, code);
+    return result.coupon;
+  }
+
   async function getOrder(id: string): Promise<Order> {
     const order = await repository.findById(id);
     if (!order) {
@@ -60,31 +107,12 @@ export function createOrderService({
         );
       }
 
-      const { customer, items, shippingMethod, paymentMethod } = parsed.data;
+      const { customer, items, shippingMethod, paymentMethod, couponCode } = parsed.data;
 
-      const orderItems: OrderItem[] = mergeItems(items).map(({ productId, quantity }) => {
-        const product = findProduct(productId);
-        if (!product) {
-          throw new OrderError("PRODUCT_NOT_FOUND", `Không tìm thấy sản phẩm "${productId}"`);
-        }
-        if (quantity > product.stock) {
-          throw new OrderError(
-            "INSUFFICIENT_STOCK",
-            product.stock === 0
-              ? `Sản phẩm "${product.name}" đã hết hàng`
-              : `Sản phẩm "${product.name}" chỉ còn ${product.stock} sản phẩm`,
-          );
-        }
-        return {
-          productId: product.id,
-          slug: product.slug,
-          name: product.name,
-          image: product.image,
-          unitPrice: product.price,
-          quantity,
-          lineTotal: product.price * quantity,
-        };
-      });
+      const orderItems = buildOrderItems(items);
+      const coupon = couponCode
+        ? resolveCoupon(couponCode, calculateSubtotal(orderItems))
+        : undefined;
 
       const createdAt = now();
       const order: Order = {
@@ -102,11 +130,31 @@ export function createOrderService({
         shippingMethod,
         paymentMethod,
         items: orderItems,
-        ...calculateOrderTotals(orderItems, shippingMethod),
+        ...(coupon ? { couponCode: coupon.code } : {}),
+        ...calculateOrderTotals(orderItems, shippingMethod, coupon),
       };
 
       await repository.save(order);
       return order;
+    },
+
+    /**
+     * Kiểm tra mã giảm giá cho giỏ hàng (không tạo dữ liệu). Tạm tính do server tính từ catalog.
+     * Trả về quy tắc công khai của đúng mã vừa nhập để client tính lại khi giỏ thay đổi.
+     */
+    async validateCoupon(input: unknown): Promise<ValidateCouponResult> {
+      const parsed = validateCouponSchema.safeParse(input);
+      if (!parsed.success) {
+        throw new OrderError(
+          "VALIDATION_ERROR",
+          "Dữ liệu kiểm tra mã giảm giá không hợp lệ",
+          toFieldErrors(parsed.error),
+        );
+      }
+      const subtotal = calculateSubtotal(buildOrderItems(parsed.data.items));
+      const result = checkCoupon(parsed.data.code, subtotal, now());
+      if (!result.ok) throw toCouponError(result, parsed.data.code);
+      return { coupon: result.coupon, subtotal, discount: result.discount };
     },
 
     /** Danh sách đơn hàng, mới nhất trước. */

@@ -24,3 +24,6 @@ test-results/
 
 # OS
 .DS_Store
+
+# dữ liệu đơn hàng khi chạy local
+storage/

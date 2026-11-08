@@ -33,6 +33,35 @@ describe("POST /api/orders", () => {
     expect(order).toMatchObject({ status: "pending", subtotal: 450_000, shippingFee: 60_000 });
   });
 
+  it("201 - tạo đơn với mã giảm giá, tổng đã trừ tiền giảm", async () => {
+    const response = await postOrder({
+      ...validBody,
+      shippingMethod: "standard",
+      items: [{ productId: "p006", quantity: 2 }],
+      couponCode: "SHOPLITE10",
+    });
+    expect(response.status).toBe(201);
+    expect(await response.json()).toMatchObject({
+      subtotal: 900_000,
+      couponCode: "SHOPLITE10",
+      discount: 90_000,
+      shippingFee: 0,
+      total: 810_000,
+    });
+  });
+
+  it.each([
+    ["COUPON_EXPIRED", "TET2026", [{ productId: "p001", quantity: 1 }]],
+    ["COUPON_MIN_SUBTOTAL_NOT_MET", "GIAM50K", [{ productId: "p010", quantity: 1 }]],
+    ["COUPON_NOT_FOUND", "KHONGCO", [{ productId: "p001", quantity: 1 }]],
+  ])("422 - %s và không tạo đơn", async (code, couponCode, items) => {
+    const before = (await (await GET()).json()).orders.length;
+    const response = await postOrder({ ...validBody, couponCode, items });
+    expect(response.status).toBe(422);
+    expect((await response.json()).error.code).toBe(code);
+    expect((await (await GET()).json()).orders).toHaveLength(before);
+  });
+
   it("400 - body không phải JSON", async () => {
     const response = await postOrder("{oops");
     expect(response.status).toBe(400);

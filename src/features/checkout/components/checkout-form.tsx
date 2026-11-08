@@ -7,6 +7,8 @@ import { Banknote, CreditCard, Truck, Zap } from "lucide-react";
 import { Button, buttonStyles } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useCart } from "@/features/cart/use-cart";
+import { CouponField } from "@/features/coupons/components/coupon-field";
+import { useAppliedCoupon } from "@/features/coupons/use-applied-coupon";
 import {
   checkoutFormSchema,
   PAYMENT_METHODS,
@@ -57,6 +59,7 @@ export function CheckoutForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "submitting" | "redirecting">("idle");
+  const appliedCoupon = useAppliedCoupon(subtotal);
 
   if (!hydrated) {
     return <div className="h-96 animate-pulse rounded-2xl bg-slate-200/60" aria-busy />;
@@ -82,6 +85,11 @@ export function CheckoutForm() {
       />
     );
   }
+
+  const orderLines = items.map((item) => ({
+    productId: item.productId,
+    quantity: item.quantity,
+  }));
 
   function handleChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = event.target;
@@ -115,13 +123,19 @@ export function CheckoutForm() {
           customer,
           shippingMethod,
           paymentMethod,
-          items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+          items: orderLines,
+          ...(appliedCoupon.coupon ? { couponCode: appliedCoupon.coupon.code } : {}),
         }),
       });
 
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as ApiErrorBody | null;
-        setSubmitError(body?.error.message ?? "Không thể đặt hàng, vui lòng thử lại.");
+        if (body?.error.code.startsWith("COUPON_")) {
+          // Mã không còn hợp lệ: gỡ mã, hiện tổng chưa giảm; khách bấm "Đặt hàng" lần nữa để xác nhận.
+          appliedCoupon.remove(body.error.message);
+        } else {
+          setSubmitError(body?.error.message ?? "Không thể đặt hàng, vui lòng thử lại.");
+        }
         setStatus("idle");
         return;
       }
@@ -257,7 +271,18 @@ export function CheckoutForm() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <CheckoutSummary items={items} shippingMethod={values.shippingMethod} />
+        <CheckoutSummary
+          items={items}
+          shippingMethod={values.shippingMethod}
+          coupon={appliedCoupon.coupon}
+        />
+        <CouponField
+          items={orderLines}
+          appliedCoupon={appliedCoupon.coupon}
+          onApplied={appliedCoupon.apply}
+          onRemoved={() => appliedCoupon.remove()}
+          notice={appliedCoupon.notice}
+        />
         {submitError && (
           <p role="alert" className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
             {submitError}

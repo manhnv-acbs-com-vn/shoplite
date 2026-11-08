@@ -47,22 +47,48 @@ export const checkoutFormSchema = customerSchema.extend({
 
 export type CheckoutFormValues = z.infer<typeof checkoutFormSchema>;
 
-/** Payload gửi lên POST /api/orders. */
+export const MAX_COUPON_CODE_LENGTH = 32;
+
+const orderItemsSchema = z
+  .array(
+    z.object({
+      productId: z.string().min(1),
+      quantity: z.number().int().min(1).max(MAX_QUANTITY_PER_ITEM),
+    }),
+  )
+  .min(1, "Giỏ hàng đang trống");
+
+const couponCodeTooLong = `Mã giảm giá tối đa ${MAX_COUPON_CODE_LENGTH} ký tự`;
+
+/** Payload gửi lên POST /api/orders. Các trường tiền do client gửi (nếu có) bị loại bỏ. */
 export const placeOrderSchema = z.object({
   customer: customerSchema,
   shippingMethod: z.enum(SHIPPING_METHODS),
   paymentMethod: z.enum(PAYMENT_METHODS),
-  items: z
-    .array(
-      z.object({
-        productId: z.string().min(1),
-        quantity: z.number().int().min(1).max(MAX_QUANTITY_PER_ITEM),
-      }),
-    )
-    .min(1, "Giỏ hàng đang trống"),
+  items: orderItemsSchema,
+  /** Mã giảm giá (tùy chọn). Rỗng = không dùng mã; được chuẩn hóa viết hoa. */
+  couponCode: z
+    .string()
+    .trim()
+    .max(MAX_COUPON_CODE_LENGTH, couponCodeTooLong)
+    .transform((code) => (code === "" ? undefined : code.toUpperCase()))
+    .optional(),
 });
 
 export type PlaceOrderInput = z.infer<typeof placeOrderSchema>;
+
+/** Payload gửi lên POST /api/coupons/validate. */
+export const validateCouponSchema = z.object({
+  code: z
+    .string("Vui lòng nhập mã giảm giá")
+    .trim()
+    .min(1, "Vui lòng nhập mã giảm giá")
+    .max(MAX_COUPON_CODE_LENGTH, couponCodeTooLong)
+    .transform((code) => code.toUpperCase()),
+  items: orderItemsSchema,
+});
+
+export type ValidateCouponInput = z.infer<typeof validateCouponSchema>;
 
 /** { "customer.phone": "Số điện thoại không hợp lệ" } - lấy lỗi đầu tiên của mỗi field. */
 export function toFieldErrors(error: z.ZodError): Record<string, string> {

@@ -25,16 +25,17 @@ npm run format       # Prettier (có plugin sắp xếp class Tailwind)
 
 ## Codemap
 
-| Capability                                  | Thư mục chính                      | File quan trọng                                                                                |
-| ------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Catalog: tìm kiếm, lọc, sắp xếp, phân trang | `src/features/catalog/`            | `catalog-service.ts` (hàm thuần), `components/catalog-filters.tsx`                             |
-| Chi tiết sản phẩm                           | `src/app/products/[slug]/page.tsx` | `features/cart/components/product-purchase-panel.tsx`                                          |
-| Giỏ hàng (client, localStorage)             | `src/features/cart/`               | `cart-reducer.ts` (quy tắc), `cart-store.ts` (store), `use-cart.ts` (hook)                     |
-| Tính tiền & thanh toán                      | `src/features/checkout/`           | `pricing.ts` (phí ship, tổng tiền), `checkout-schema.ts` (Zod), `components/checkout-form.tsx` |
-| Đơn hàng (server)                           | `src/features/orders/`             | `order-service.ts` (nghiệp vụ), `order-repository.ts` (lưu JSON), `server.ts` (instance)       |
-| API                                         | `src/app/api/`                     | `products/route.ts`, `orders/route.ts`, `orders/[id]/route.ts`                                 |
-| UI dùng chung                               | `src/components/`                  | `ui/button.tsx` (`buttonStyles` cho Link), `layout/header.tsx`                                 |
-| Dữ liệu mẫu                                 | `src/data/`                        | `products.ts` (16 sản phẩm), `categories.ts`                                                   |
+| Capability                                  | Thư mục chính                      | File quan trọng                                                                                                                                   |
+| ------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Catalog: tìm kiếm, lọc, sắp xếp, phân trang | `src/features/catalog/`            | `catalog-service.ts` (hàm thuần), `components/catalog-filters.tsx`                                                                                |
+| Chi tiết sản phẩm                           | `src/app/products/[slug]/page.tsx` | `features/cart/components/product-purchase-panel.tsx`                                                                                             |
+| Giỏ hàng (client, localStorage)             | `src/features/cart/`               | `cart-reducer.ts` (quy tắc), `cart-store.ts` (store), `use-cart.ts` (hook)                                                                        |
+| Tính tiền & thanh toán                      | `src/features/checkout/`           | `pricing.ts` (phí ship, tổng tiền), `checkout-schema.ts` (Zod), `components/checkout-form.tsx`                                                    |
+| Đơn hàng (server)                           | `src/features/orders/`             | `order-service.ts` (nghiệp vụ), `order-repository.ts` (lưu JSON), `server.ts` (instance)                                                          |
+| Mã giảm giá                                 | `src/features/coupons/`            | `coupon-rules.ts` (quy tắc thuần, dùng được ở client), `coupon-service.ts` (tra `src/data/coupons.ts`, chỉ server), `components/coupon-field.tsx` |
+| API                                         | `src/app/api/`                     | `products/route.ts`, `orders/route.ts`, `orders/[id]/route.ts`                                                                                    |
+| UI dùng chung                               | `src/components/`                  | `ui/button.tsx` (`buttonStyles` cho Link), `layout/header.tsx`                                                                                    |
+| Dữ liệu mẫu                                 | `src/data/`                        | `products.ts` (16 sản phẩm), `categories.ts`                                                                                                      |
 
 Luồng đặt hàng: `CheckoutForm` → `POST /api/orders` → `orderService.placeOrder()` (validate Zod →
 lấy giá từ catalog → kiểm tra tồn kho → `calculateOrderTotals`) → `orderRepository.save()` →
