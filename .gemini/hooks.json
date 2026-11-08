@@ -1,0 +1,48 @@
+{
+  "progress-notifier": {
+    "Notification": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node .gemini/hooks/notify.mjs" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node .gemini/hooks/notify.mjs" }
+        ]
+      }
+    ]
+  },
+  "audit-logger": {
+    "PostToolUse": [
+      {
+        "matcher": "run_command|Bash",
+        "hooks": [
+          { "type": "command", "command": "node .gemini/hooks/log-bash.mjs" }
+        ]
+      }
+    ]
+  },
+  "file-guardian": {
+    "PreToolUse": [
+      {
+        "matcher": "edit_file|write_file|Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "node .gemini/hooks/protect-files.mjs" }
+        ]
+      }
+    ]
+  },
+  "auto-formatter": {
+    "PostToolUse": [
+      {
+        "matcher": "edit_file|write_file|Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "node .gemini/hooks/format-file.mjs" }
+        ]
+      }
+    ]
+  }
+}

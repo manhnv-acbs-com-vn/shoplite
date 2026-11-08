@@ -1,0 +1,153 @@
+{
+  "$schema": "https://raw.githubusercontent.com/google-gemini/gemini-cli/main/schemas/settings.json",
+  "security": {
+    "reviewMode": "always",
+    "allow": [
+      "Execute(npm run dev)",
+      "Execute(npm run lint)",
+      "Execute(npm run typecheck)",
+      "Execute(npm run check)",
+      "Execute(npm run format)",
+      "Execute(npm test*)",
+      "Execute(npm run test:coverage)",
+      "Execute(npm run test:e2e)",
+      "Execute(npx vitest run*)",
+      "Execute(git status)",
+      "Execute(git diff*)",
+      "Execute(git log*)",
+      "Execute(git branch*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Write(./.env*)",
+      "Read(**/*.pem)",
+      "Read(**/*.p12)",
+      "Read(**/*.key)",
+      "Read(~/.ssh/*)",
+      "Write(~/.ssh/*)",
+      "Execute(git push*)",
+      "Execute(curl *)",
+      "Execute(wget *)",
+      "Execute(sudo *)",
+      "Execute(rm -rf /)",
+      "Execute(rm -rf ~)"
+    ]
+  },
+  "permissions": {
+    "defaultMode": "default",
+    "allow": [
+      "Bash(npm run dev)",
+      "Bash(npm run lint)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run check)",
+      "Bash(npm run format)",
+      "Bash(npm test *)",
+      "Bash(npm run test:coverage)",
+      "Bash(npm run test:e2e)",
+      "Bash(npx vitest run *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git branch *)"
+    ],
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(npm install *)",
+      "Bash(npm uninstall *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(sudo *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|edit_file|write_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${GEMINI_PROJECT_DIR}/.gemini/hooks/protect-files.mjs"]
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${GEMINI_PROJECT_DIR}/.gemini/hooks/guard-bash.mjs"]
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|edit_file|write_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${GEMINI_PROJECT_DIR}/.gemini/hooks/format-file.mjs"]
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${GEMINI_PROJECT_DIR}/.gemini/hooks/log-bash.mjs"]
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${GEMINI_PROJECT_DIR}/.gemini/hooks/scan-prompt.mjs"]
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${GEMINI_PROJECT_DIR}/.gemini/hooks/notify.mjs"]
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${GEMINI_PROJECT_DIR}/.gemini/hooks/quality-gate.mjs"],
+            "timeout": 120
+          },
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${GEMINI_PROJECT_DIR}/.gemini/hooks/notify.mjs"]
+          }
+        ]
+      }
+    ]
+  }
+}

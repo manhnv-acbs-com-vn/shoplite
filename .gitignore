@@ -24,3 +24,8 @@ test-results/
 
 # OS
 .DS_Store
+
+# local storage
+storage/
+.agents/logs/
+.gemini/logs/
