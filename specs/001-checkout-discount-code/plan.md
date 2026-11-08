@@ -81,13 +81,19 @@ src/
 │   └── coupons.ts                        # MỚI - SHOPLITE10, GIAM50K, TET2026
 ├── features/
 │   ├── coupons/                          # MỚI
-│   │   ├── types.ts                      # Coupon, CouponCheckResult
-│   │   ├── coupon-service.ts             # normalizeCouponCode, findCoupon, isCouponExpired,
-│   │   │                                 # calculateDiscount, checkCoupon(code, subtotal, now)
-│   │   ├── coupon-service.test.ts        # giá trị biên + toàn vẹn dữ liệu coupons.ts
-│   │   ├── coupon-messages.ts            # CouponCheckResult → message tiếng Việt + OrderError
+│   │   ├── types.ts                      # Coupon, CouponCheckResult, CouponFailure
+│   │   ├── coupon-rules.ts               # quy tắc thuần KHÔNG import danh sách mã (dùng ở client
+│   │   │                                 # và pricing.ts): normalizeCouponCode, isCouponExpired,
+│   │   │                                 # calculateDiscount, checkCouponEligibility
+│   │   ├── coupon-service.ts             # CHỈ server: findCoupon, checkCoupon(code, subtotal, now)
+│   │   │                                 # - import src/data/coupons.ts, re-export coupon-rules
+│   │   ├── coupon-service.test.ts        # giá trị biên: tối thiểu, mức tối đa, hết hạn, làm tròn
+│   │   ├── coupon-data.test.ts           # toàn vẹn dữ liệu src/data/coupons.ts (FR-019)
+│   │   ├── coupon-messages.ts            # describeCouponFailure (message dùng chung client/server)
+│   │   │                                 # + toCouponError (OrderError 422)
 │   │   ├── coupon-messages.test.ts
 │   │   ├── use-applied-coupon.ts         # state mã ở client, tự gỡ khi dưới tối thiểu
+│   │   ├── use-applied-coupon.test.ts    # tự gỡ theo tạm tính, không tự áp dụng lại
 │   │   └── components/
 │   │       ├── coupon-field.tsx          # ô nhập + "Áp dụng" / "Gỡ mã" + thông báo
 │   │       └── coupon-field.test.tsx
@@ -120,7 +126,9 @@ README.md                                 # SỬA - API mới, quy tắc mã gi�
 ```
 
 **Structure Decision**: Giữ cấu trúc feature-based hiện tại. `coupons` là feature độc lập không phụ
-thuộc `orders`/`checkout`; `checkout/pricing.ts` import `calculateDiscount` từ `coupons`;
+thuộc `orders`/`checkout`; `checkout/pricing.ts` import `calculateDiscount` từ `coupons/coupon-rules.ts`
+(không phải `coupon-service.ts`) vì `pricing.ts` chạy cả ở client - nhờ vậy danh sách mã trong
+`src/data/coupons.ts` không lọt vào bundle trình duyệt (research R1);
 `orders/order-service.ts` dùng `checkCoupon` để kiểm tra mã lúc đặt hàng. Logic kiểm tra mã cho
 route validate đặt trong `orderService.validateCoupon(input)` vì cần tra catalog để tính tạm tính
 giống `placeOrder` (dùng chung hàm tính dòng hàng, không lặp code).
@@ -147,6 +155,12 @@ báo, khách bấm lại (FR-016); hợp lệ: `calculateOrderTotals(..., coupon
 - **Đổi chữ ký `calculateOrderTotals`**: tham số mới là tùy chọn, các nơi gọi cũ (cart summary) không
   phải sửa; `OrderTotals` có thêm `discount` nên `Order` mới luôn có `discount`.
 - **Dò mã**: không có rate limit (research R8) - rủi ro đã chấp nhận.
+- **Thay đổi hạ tầng ngoài spec (đã review, giữ lại)**:
+  - `.prettierrc.json` (`printWidth: 100`): repo chưa có cấu hình Prettier nên hook `format-file.mjs`
+    định dạng lại file vừa sửa theo mặc định 80 cột, lệch với style hiện có (toàn bộ `src/` đã đúng
+    100 cột). Không đổi định dạng file nào khác; `npx prettier --check src e2e` pass.
+  - `storage/` trong `.gitignore`: AGENTS.md và constitution (§Ràng buộc kỹ thuật) yêu cầu không
+    commit `storage/`, nhưng `.gitignore` còn thiếu - E2E tạo đơn thật vào `storage/orders.json`.
 - **Giữ mã khi rời trang**: đã chốt là không giữ (spec §Clarifications Q3) nên không đổi định dạng
   `localStorage`.
 

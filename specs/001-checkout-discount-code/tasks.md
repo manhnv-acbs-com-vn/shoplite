@@ -259,3 +259,11 @@ Task: "T021 mở rộng src/features/checkout/components/checkout-form.test.tsx"
   rỗng theo từng ngữ cảnh); CHK023 → Assumptions, **còn chờ marketing xác nhận**. Reviewer tự đánh
   dấu các mục checklist.
 - Câu hỏi làm rõ số 3 đã chốt: không lưu mã khi rời trang thanh toán (spec §Clarifications).
+
+---
+
+## Phase 9: Convergence
+
+- [X] T059 Trả `message` của lỗi `VALIDATION_ERROR` trong `validateCoupon` (`src/features/orders/order-service.ts`) bằng lỗi theo trường của `code` ("Vui lòng nhập mã giảm giá" / "Mã giảm giá tối đa 32 ký tự") thay cho câu chung "Dữ liệu kiểm tra mã giảm giá không hợp lệ", và thêm `maxLength={32}` cho ô nhập trong `src/features/coupons/components/coupon-field.tsx`; viết test trước trong `src/app/api/coupons/validate/route.test.ts` và `coupon-field.test.tsx` per contracts/coupons-validate.md, Spec §Edge Cases "Mã quá dài" (partial)
+- [X] T060 Cập nhật cây thư mục trong `specs/001-checkout-discount-code/plan.md` (qua `/speckit-plan` hoặc chỉnh tay có review) để ghi nhận `src/features/coupons/coupon-rules.ts` (quy tắc thuần dùng ở client, tách khỏi `src/data/coupons.ts` theo research R1), `describeCouponFailure` trong `coupon-messages.ts`, `coupon-data.test.ts` và `use-applied-coupon.test.ts` per plan: Project Structure (unrequested)
+- [X] T061 Review và ghi nhận lý do cho các thay đổi ngoài phạm vi spec: `.prettierrc.json` (`printWidth: 100`, khớp style hiện có, tránh hook format-file định dạng lại file theo 80 cột) và mục `storage/` trong `.gitignore` (constitution §Ràng buộc kỹ thuật: không commit `storage/`) - giữ lại nếu được chấp thuận per Constitution §Ràng buộc kỹ thuật (unrequested)

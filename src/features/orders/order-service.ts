@@ -145,10 +145,12 @@ export function createOrderService({
     async validateCoupon(input: unknown): Promise<ValidateCouponResult> {
       const parsed = validateCouponSchema.safeParse(input);
       if (!parsed.success) {
+        const fieldErrors = toFieldErrors(parsed.error);
+        // Lỗi của ô mã được trả thẳng làm message để trang thanh toán hiển thị cạnh ô nhập.
         throw new OrderError(
           "VALIDATION_ERROR",
-          "Dữ liệu kiểm tra mã giảm giá không hợp lệ",
-          toFieldErrors(parsed.error),
+          fieldErrors.code ?? "Dữ liệu kiểm tra mã giảm giá không hợp lệ",
+          fieldErrors,
         );
       }
       const subtotal = calculateSubtotal(buildOrderItems(parsed.data.items));

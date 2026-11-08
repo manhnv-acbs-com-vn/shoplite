@@ -25,6 +25,15 @@ describe("<CouponField />", () => {
     expect(screen.getByRole("button", { name: "Áp dụng" })).toBeInTheDocument();
   });
 
+  it("giới hạn ô nhập tối đa 32 ký tự", async () => {
+    const user = userEvent.setup();
+    render(<CouponField items={items} appliedCoupon={null} onApplied={vi.fn()} />);
+    const input = screen.getByLabelText("Mã giảm giá");
+    expect(input).toHaveAttribute("maxLength", "32");
+    await user.type(input, "A".repeat(40));
+    expect(input).toHaveValue("A".repeat(32));
+  });
+
   it("gửi mã và giỏ hàng lên server, báo mã hợp lệ cho component cha", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(

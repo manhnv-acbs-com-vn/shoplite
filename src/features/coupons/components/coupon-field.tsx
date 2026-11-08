@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { TicketPercent } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MAX_COUPON_CODE_LENGTH } from "@/features/checkout/checkout-schema";
 import type { ApiErrorBody } from "@/lib/http";
 import type { Coupon } from "../types";
 
@@ -74,6 +75,7 @@ export function CouponField({
           }}
           placeholder="Nhập mã, ví dụ SHOPLITE10"
           autoComplete="off"
+          maxLength={MAX_COUPON_CODE_LENGTH}
           disabled={Boolean(appliedCoupon)}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? ERROR_ID : undefined}

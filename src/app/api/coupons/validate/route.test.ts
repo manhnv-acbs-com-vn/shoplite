@@ -82,13 +82,20 @@ describe("POST /api/coupons/validate", () => {
     });
   });
 
-  it.each(["", "   ", "A".repeat(33)])("400 - VALIDATION_ERROR khi mã %j", async (code) => {
+  it.each([
+    ["", "Vui lòng nhập mã giảm giá"],
+    ["   ", "Vui lòng nhập mã giảm giá"],
+    ["A".repeat(33), "Mã giảm giá tối đa 32 ký tự"],
+  ])("400 - VALIDATION_ERROR khi mã %j, message là lỗi theo trường", async (code, message) => {
     const response = await postValidate({
       code,
       items: [{ productId: "p001", quantity: 1 }],
     });
     expect(response.status).toBe(400);
-    expect((await response.json()).error.code).toBe("VALIDATION_ERROR");
+    const { error } = await response.json();
+    expect(error.code).toBe("VALIDATION_ERROR");
+    expect(error.message).toBe(message);
+    expect(error.details).toEqual({ code: message });
   });
 
   it("422 - PRODUCT_NOT_FOUND khi sản phẩm không tồn tại", async () => {
