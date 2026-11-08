@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CircleCheck } from "lucide-react";
+import { getProductById } from "@/features/catalog/catalog-service";
 import { ProductImage } from "@/features/catalog/components/product-image";
 import { PAYMENT_OPTIONS } from "@/features/checkout/checkout-schema";
 import { SHIPPING_OPTIONS } from "@/features/checkout/pricing";
 import { CancelOrderButton } from "@/features/orders/components/cancel-order-button";
 import { OrderStatusBadge } from "@/features/orders/components/order-status-badge";
+import { ReorderButton, type ReorderLine } from "@/features/orders/components/reorder-button";
 import { OrderError } from "@/features/orders/order-errors";
 import { orderService } from "@/features/orders/server";
 import type { Order } from "@/features/orders/types";
@@ -21,6 +23,13 @@ async function findOrder(id: string): Promise<Order | null> {
     if (error instanceof OrderError && error.code === "ORDER_NOT_FOUND") return null;
     throw error;
   }
+}
+
+function toReorderLines(order: Order): ReorderLine[] {
+  return order.items.flatMap((item) => {
+    const product = getProductById(item.productId);
+    return product ? [{ product, quantity: item.quantity }] : [];
+  });
 }
 
 export async function generateMetadata({ params }: PageProps<"/orders/[id]">): Promise<Metadata> {
@@ -67,6 +76,7 @@ export default async function OrderDetailPage({ params, searchParams }: PageProp
           <p className="mt-1 text-sm text-slate-500">Đặt lúc {formatDateTime(order.createdAt)}</p>
         </div>
         {order.status === "pending" && <CancelOrderButton orderId={order.id} />}
+        {order.status === "cancelled" && <ReorderButton lines={toReorderLines(order)} />}
       </header>
 
       <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">

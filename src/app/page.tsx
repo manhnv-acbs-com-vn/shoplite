@@ -24,7 +24,7 @@ export default function HomePage() {
             Miễn phí giao hàng cho đơn từ {formatCurrency(FREE_SHIPPING_THRESHOLD)}
           </p>
           <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
-            Đồ công nghệ chất lượng, giá tốt mỗi ngày
+            Siêu sale công nghệ
           </h1>
           <p className="mt-4 text-lg text-indigo-100">
             Tai nghe, bàn phím, phụ kiện và thiết bị nhà thông minh chính hãng - giao nhanh toàn
