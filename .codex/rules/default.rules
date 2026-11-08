@@ -1,0 +1,24 @@
+# Cho phép tự động chạy kiểm tra và Git chỉ đọc.
+prefix_rule(pattern = ["npm", "run", "check"], decision = "allow")
+prefix_rule(pattern = ["npm", "run", "lint"], decision = "allow")
+prefix_rule(pattern = ["npm", "run", "typecheck"], decision = "allow")
+prefix_rule(pattern = ["npm", "test"], decision = "allow")
+prefix_rule(pattern = ["npx", "vitest", "run"], decision = "allow")
+prefix_rule(pattern = ["git", "status"], decision = "allow")
+prefix_rule(pattern = ["git", "diff"], decision = "allow")
+prefix_rule(pattern = ["git", "log"], decision = "allow")
+prefix_rule(pattern = ["git", "branch"], decision = "allow")
+
+# Luôn hỏi trước khi thay đổi shared state hoặc dependency.
+prefix_rule(pattern = ["git", "commit"], decision = "prompt")
+prefix_rule(pattern = ["git", "push"], decision = "prompt")
+prefix_rule(pattern = ["npm", "install"], decision = "prompt")
+prefix_rule(pattern = ["npm", "uninstall"], decision = "prompt")
+prefix_rule(pattern = ["npm", "run", "dev"], decision = "prompt")
+
+# Cấm tải arbitrary content, leo thang quyền hoặc phá hủy thay đổi.
+prefix_rule(pattern = [{ any_of = ["curl", "wget", "sudo"] }], decision = "forbidden")
+prefix_rule(pattern = ["git", "reset"], decision = "forbidden")
+prefix_rule(pattern = ["git", "restore"], decision = "forbidden")
+prefix_rule(pattern = ["rm"], decision = "forbidden")
+

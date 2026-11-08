@@ -1,0 +1,101 @@
+{
+  "description": "ShopLite Codex lifecycle hooks.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/guard-bash.mjs\"",
+            "timeout": 30,
+            "statusMessage": "Checking Bash command"
+          }
+        ]
+      },
+      {
+        "matcher": "^apply_patch$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/protect-files.mjs\"",
+            "timeout": 30,
+            "statusMessage": "Checking patched files"
+          }
+        ]
+      },
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/protect-files.mjs\"",
+            "timeout": 30,
+            "statusMessage": "Checking sensitive file paths"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "Bash|apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/notify.mjs\"",
+            "timeout": 3,
+            "statusMessage": "Sending permission notification"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/log-bash.mjs\"",
+            "timeout": 30,
+            "statusMessage": "Logging Bash command"
+          }
+        ]
+      },
+      {
+        "matcher": "^apply_patch$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/format-file.mjs\"",
+            "timeout": 120,
+            "statusMessage": "Formatting patched files"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/scan-prompt.mjs\"",
+            "timeout": 10,
+            "statusMessage": "Scanning prompt"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/quality-gate.mjs\"",
+            "timeout": 120,
+            "statusMessage": "Running quality gate"
+          }
+        ]
+      }
+    ]
+  }
+}

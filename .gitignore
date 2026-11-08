@@ -19,8 +19,12 @@ test-results/
 .env.*
 !.env.example
 
+# application data
+storage/
+
 # logs
 *.log
+.codex/logs/
 
 # OS
 .DS_Store
