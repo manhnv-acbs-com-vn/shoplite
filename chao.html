@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chào Bạn! 👋</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f9d976, #f39f86, #f067a6, #a855f7);
+      background-size: 300% 300%;
+      animation: gradientMove 6s ease infinite;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes gradientMove {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 50px 60px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: popIn 0.6s ease;
+    }
+
+    @keyframes popIn {
+      0%   { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+
+    .emoji {
+      font-size: 80px;
+      display: block;
+      margin-bottom: 16px;
+      animation: bounce 1.5s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-15px); }
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    h1 span {
+      color: #f067a6;
+    }
+
+    p {
+      font-size: 1.2rem;
+      color: #555;
+      margin-top: 10px;
+    }
+
+    .stars {
+      margin-top: 20px;
+      font-size: 2rem;
+      letter-spacing: 8px;
+      animation: twinkle 1.2s infinite alternate;
+    }
+
+    @keyframes twinkle {
+      0%   { opacity: 0.4; transform: scale(1); }
+      100% { opacity: 1;   transform: scale(1.2); }
+    }
+
+    .btn {
+      margin-top: 30px;
+      display: inline-block;
+      padding: 12px 32px;
+      background: linear-gradient(to right, #f067a6, #a855f7);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-size: 1rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(240, 103, 166, 0.5);
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(168, 85, 247, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <span class="emoji">🎉</span>
+    <h1>Chào <span>Bạn!</span></h1>
+    <p>Hôm nay bạn thế nào? Chúc bạn một ngày thật vui vẻ! 😊</p>
+    <div class="stars">⭐ ✨ 🌟 ✨ ⭐</div>
+    <br/>
+    <button class="btn" onclick="clickMe()">Nhấn vào tôi! 🥳</button>
+  </div>
+
+  <script>
+    const messages = [
+      "😄 Bạn thật tuyệt vời!",
+      "🌈 Mỗi ngày là một ngày mới!",
+      "💪 Cố lên nào!",
+      "🎶 Vui lên nhé bạn ơi!",
+      "🍀 Chúc bạn may mắn!",
+      "🚀 Hôm nay sẽ là ngày tốt lành!",
+    ];
+    let idx = 0;
+
+    function clickMe() {
+      const p = document.querySelector("p");
+      p.textContent = messages[idx % messages.length];
+      idx++;
+    }
+  </script>
+
+</body>
+</html>

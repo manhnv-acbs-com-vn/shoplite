@@ -1,0 +1,50 @@
+{
+  "protect-files": {
+    "PreToolUse": [
+      {
+        "matcher": "edit_file|write_file",
+        "hooks": [
+          {
+            "command": "node ./hooks/protect-files.mjs"
+          }
+        ]
+      }
+    ]
+  },
+  "guard-bash": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "command": "node ./hooks/guard-bash.mjs"
+          }
+        ]
+      }
+    ]
+  },
+  "log-bash": {
+    "PostToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "command": "node ./hooks/log-bash.mjs"
+          }
+        ]
+      }
+    ]
+  },
+  "format-file": {
+    "PostToolUse": [
+      {
+        "matcher": "edit_file|write_file",
+        "hooks": [
+          {
+            "command": "node ./hooks/format-file.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}
