@@ -147,8 +147,8 @@ báo, khách bấm lại (FR-016); hợp lệ: `calculateOrderTotals(..., coupon
 - **Đổi chữ ký `calculateOrderTotals`**: tham số mới là tùy chọn, các nơi gọi cũ (cart summary) không
   phải sửa; `OrderTotals` có thêm `discount` nên `Order` mới luôn có `discount`.
 - **Dò mã**: không có rate limit (research R8) - rủi ro đã chấp nhận.
-- **Câu hỏi làm rõ số 3** (giữ mã khi rời trang) chưa được trả lời; plan theo giả định của spec:
-  không giữ. Đổi sang giữ mã sẽ cần lưu thêm vào `localStorage` và xử lý dữ liệu cũ.
+- **Giữ mã khi rời trang**: đã chốt là không giữ (spec §Clarifications Q3) nên không đổi định dạng
+  `localStorage`.
 
 ## Complexity Tracking
 

@@ -23,6 +23,9 @@ dùng, mã riêng cho từng khách."
 - Q: Khách xóa bớt sản phẩm khiến tạm tính xuống dưới mức tối thiểu của mã đã áp dụng thì sao? → A:
   Tự gỡ mã, hiển thị thông báo chưa đạt tối thiểu kèm số tiền cần mua thêm, tổng tiền về giá chưa
   giảm; muốn dùng lại khách phải mua thêm và nhập lại mã (Option A).
+- Q: Khi khách rời trang thanh toán hoặc tải lại trang, mã đang áp dụng có được giữ lại không? → A:
+  Không giữ; khách nhập lại mã khi quay lại trang thanh toán. Mã không được lưu vào giỏ hàng
+  (Option A).
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -171,7 +174,12 @@ giả mạo hoặc mã đã hết hạn và kiểm tra kết quả.
   tính xuống dưới mức tối thiểu, mã tự được gỡ, khách thấy thông báo cần mua thêm bao nhiêu và tổng
   tiền về giá chưa giảm; nút "Đặt hàng" vẫn dùng được. Mua thêm cho đủ mức không tự áp dụng lại mã.
 - **Nhiều mã**: yêu cầu đặt hàng chứa nhiều hơn một mã bị từ chối.
-- **Mã quá dài hoặc ký tự lạ**: được coi là "mã không tồn tại", không gây lỗi hệ thống.
+- **Mã quá dài**: mã dài hơn 32 ký tự (sau khi bỏ khoảng trắng đầu/cuối) bị từ chối là dữ liệu nhập
+  không hợp lệ, không gây lỗi hệ thống.
+- **Mã có ký tự lạ** (trong giới hạn 32 ký tự): được coi là "mã không tồn tại".
+- **Mã rỗng / chỉ toàn khoảng trắng**: ở trang thanh toán, bấm "Áp dụng" chỉ hiện lời nhắc nhập mã và
+  không gửi yêu cầu kiểm tra; yêu cầu kiểm tra mã gửi thẳng tới hệ thống với mã rỗng bị từ chối là
+  dữ liệu nhập không hợp lệ; yêu cầu đặt hàng có mã rỗng được coi như không dùng mã.
 - **Đơn cũ không có thông tin mã**: vẫn hiển thị bình thường như đơn không dùng mã.
 
 ## Requirements _(mandatory)_
@@ -275,8 +283,15 @@ giả mạo hoặc mã đã hết hạn và kiểm tra kết quả.
 - Giảm giá áp dụng trên tạm tính tiền hàng; phí giao hàng giữ nguyên và điều kiện miễn phí giao hàng
   xét trên tạm tính trước giảm giá (giữ quy tắc phí ship hiện hành). Nếu marketing muốn xét sau giảm
   giá, cần làm rõ ở bước `/speckit-clarify`.
-- Mã áp dụng ở trang thanh toán chỉ tồn tại trong phiên thanh toán đó; rời trang hoặc tải lại có thể
-  phải nhập lại mã. Mã không được lưu vào giỏ hàng.
+- Mã áp dụng ở trang thanh toán chỉ tồn tại trong phiên thanh toán đó; rời trang hoặc tải lại thì
+  phải nhập lại mã. Mã không được lưu vào giỏ hàng (đã chốt - xem Clarifications).
+- Giá sản phẩm là dữ liệu tĩnh, chỉ thay đổi khi triển khai phiên bản mới. Nếu giá thay đổi giữa lúc
+  áp dụng mã và lúc đặt hàng mà mã vẫn hợp lệ, đơn được tạo theo số tiền hệ thống tính lại (giá mới)
+  và số tiền đúng hiển thị ở trang chi tiết đơn; không từ chối đơn vì chênh lệch này.
+- Không giới hạn số lần thử mã (chống dò mã hàng loạt): rủi ro đã chấp nhận vì mã khuyến mãi được
+  công bố rộng rãi và dự án không có hạ tầng giới hạn tần suất.
+- Việc kết hợp mã giảm giá với miễn phí giao hàng (vd. tạm tính 500.000đ + `GIAM50K` → trả 450.000đ,
+  vẫn miễn phí ship) được chấp nhận theo FR-010; marketing cần xác nhận trước khi ra mắt.
 - Giờ Việt Nam (UTC+7) là chuẩn để xét ngày hết hạn.
 - Không có giới hạn lượt dùng: một mã có thể được dùng cho nhiều đơn, bởi nhiều khách.
 - Danh sách mã cố định trong hệ thống; thêm/sửa mã là thay đổi do đội phát triển thực hiện.
