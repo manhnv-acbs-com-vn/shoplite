@@ -1,0 +1,14 @@
+name: Thu runner
+on: pull_request
+permissions: {}
+jobs:
+  o-dau:
+    # Chỉ PR từ nhánh trong chính repo này: PR từ fork của người khác không được chạm vào runner của bạn.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ${{ vars.RUNNER_AI || 'ubuntu-latest' }}
+    timeout-minutes: 2
+    steps:
+      - run: |
+          echo "người dùng: $(whoami) · máy: $(hostname) · HOME: $HOME"
+          ls -A ~
+          ls ~/.claude/skills 2>/dev/null || echo "(không có ~/.claude/skills)"
