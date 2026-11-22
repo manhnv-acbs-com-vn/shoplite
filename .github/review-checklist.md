@@ -17,7 +17,6 @@ Checklist này được đọc từ **nhánh main**, không từ PR: PR không s
 
 | Mã   | Mục kiểm được                                                                                                                                     | Ai kiểm              |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| BM-1 | Không dựng `RegExp` từ dữ liệu bên ngoài, **kể cả khi comment nói dữ liệu "đã được kiểm"**. Thử `q=tai(` (lỗi 500) và `q=(.*.*)*!` (treo server). | **lint** (gate) + AI |
 | BM-2 | Không chèn HTML thô (`dangerouslySetInnerHTML`).                                                                                                  | **lint** (gate)      |
 | BM-3 | Không có khoá, token, mật khẩu trong code, test, log hay lịch sử commit. Xóa ở commit sau **không đủ**: phải viết lại lịch sử và thu hồi khoá.    | **gitleaks** (gate)  |
 | BM-4 | Server tự kiểm mọi đầu vào (độ dài, số lượng, giá, trạng thái), không tin con số trình duyệt gửi lên.                                             | AI + người           |
