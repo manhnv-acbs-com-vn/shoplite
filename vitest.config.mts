@@ -18,6 +18,8 @@ export default defineConfig({
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/**/*.test.{ts,tsx}", "src/app/**/page.tsx", "src/app/**/layout.tsx"],
+      // Sàn coverage của gate unit (Module 7): chặn tụt mạnh, không nói được tính năng mới có test hay không.
+      thresholds: { lines: 60, statements: 60, functions: 60, branches: 55 },
     },
   },
 });
