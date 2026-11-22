@@ -1,0 +1,8 @@
+# Cấu hình gitleaks của ShopLite (job bao-mat trong .github/workflows/ci.yml).
+# Dùng toàn bộ luật mặc định, chỉ thêm ngoại lệ có lý do. Mỗi ngoại lệ phải được người review duyệt.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Manifest do trình cài BMAD sinh ra: cột hash của từng file bị luật generic-api-key nhận nhầm là khoá"
+paths = ['''^_bmad/_config/files-manifest\.csv$''']
